@@ -3,6 +3,28 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 import schedule
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+
+def send_mail(stock_name):
+    me = "***"
+    my_pw = "***"
+    you = "***"
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = "알림"
+    msg['From'] = me
+    msg['To'] = you
+
+    html = '주목할 주식' + stock_name
+    part2 = MIMEText(html, 'html')
+    msg.attach(part2)
+    s = smtplib.SMTP_SSL('smtp.gmail.com')
+    s.login(me, my_pw)
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
 
 
 def get_stock():
@@ -41,6 +63,10 @@ def get_stock():
 
         print(name, current_price, rate)
 
+        if(float(rate) > -5):
+            print('send', name)
+            send_mail(name)
+
     print('==========')
 
     driver.quit()
@@ -51,7 +77,7 @@ def job():
 
 
 def run():
-    schedule.every(15).seconds.do(job)
+    schedule.every(150).seconds.do(job)
     while True:
         schedule.run_pending()
 
