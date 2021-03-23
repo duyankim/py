@@ -2,40 +2,59 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
+import schedule
 
-options = webdriver.ChromeOptions()
-options.add_argument('headless')
-options.add_argument('window-size=1920x1080')
-options.add_argument("disable-gpu")
-options.add_argument(
-    "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 
-driver = webdriver.Chrome(
-    "C:/Users/USER/Desktop/chromedriver_win32 (1)/chromedriver.exe", options=options)
+def get_stock():
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    options.add_argument('window-size=1920x1080')
+    options.add_argument("disable-gpu")
+    options.add_argument(
+        "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 
-codes = ['005930', '035420', '017670', '096770', '035720']
-#삼성전자, 네이버, SK텔레콤, SK이노베이션, 카카오
+    driver = webdriver.Chrome(
+        "C:/Users/USER/Desktop/chromedriver_win32 (1)/chromedriver.exe", options=options)
 
-for code in codes:
+    codes = ['005930', '035420', '017670', '096770', '035720']
+    #삼성전자, 네이버, SK텔레콤, SK이노베이션, 카카오
 
-    url = 'https://m.stock.naver.com/item/main.nhn#/stocks/'+code+'/total'
+    for code in codes:
 
-    driver.get(url)
+        url = 'https://m.stock.naver.com/item/main.nhn#/stocks/'+code+'/total'
 
-    time.sleep(2)
+        driver.get(url)
 
-    # 크롬에서 HTML 정보를 가져오고 BeautifulSoup을 통해 검색하기 쉽도록 가공
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
+        time.sleep(2)
 
-    name = soup.select_one(
-        '#header > div.end_header_topinfo > div.flick-container.major_info_wrp > div > div:nth-child(2) > div.stock_info > div.item_wrp > div.elips_wrp > h2').text
+        # 크롬에서 HTML 정보를 가져오고 BeautifulSoup을 통해 검색하기 쉽도록 가공
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-    current_price = soup.select_one(
-        '#header > div.end_header_topinfo > div.flick-container > div > div:nth-child(2) > div.stock_info > div.stock_wrp > div.price_wrp > strong').text
+        name = soup.select_one(
+            '#header > div.end_header_topinfo > div.flick-container.major_info_wrp > div > div:nth-child(2) > div.stock_info > div.item_wrp > div.elips_wrp > h2').text
 
-    rate = soup.select_one(
-        '#header > div.end_header_topinfo > div.flick-container > div > div:nth-child(2) > div.stock_info > div.stock_wrp > div.price_wrp > div.gap_wrp > span.gap_rate > span.rate').text
+        current_price = soup.select_one(
+            '#header > div.end_header_topinfo > div.flick-container > div > div:nth-child(2) > div.stock_info > div.stock_wrp > div.price_wrp > strong').text
 
-    print(name, current_price, rate)
+        rate = soup.select_one(
+            '#header > div.end_header_topinfo > div.flick-container > div > div:nth-child(2) > div.stock_info > div.stock_wrp > div.price_wrp > div.gap_wrp > span.gap_rate > span.rate').text
 
-driver.quit()
+        print(name, current_price, rate)
+
+    print('==========')
+
+    driver.quit()
+
+
+def job():
+    get_stock()
+
+
+def run():
+    schedule.every(15).seconds.do(job)
+    while True:
+        schedule.run_pending()
+
+
+if __name__ == "__main__":
+    run()
